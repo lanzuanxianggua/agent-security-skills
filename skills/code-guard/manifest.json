@@ -1,0 +1,33 @@
+{
+  "name": "code-guard",
+  "version": "1.0.0",
+  "description": "AI-powered code security audit skill. Scans for OWASP Top 10 vulnerabilities, leaked secrets, insecure dependencies, and compliance violations.",
+  "author": "agent-security-skills",
+  "license": "MIT",
+  "sourceFormat": "universal",
+  "compatibility": {
+    "claude-code": { "status": "full", "minVersion": "1.0.0" },
+    "cursor": { "status": "full" },
+    "windsurf": { "status": "full" },
+    "copilot": { "status": "partial", "notes": "No schema or script support; body renders as context" },
+    "aider": { "status": "experimental", "notes": "Basic Markdown support only" }
+  },
+  "files": {
+    "skill": "SKILL.md",
+    "manifest": "manifest.json",
+    "references": [
+      "references/owasp-top10.md",
+      "references/dependency-security.md",
+      "references/secret-detection.md",
+      "references/compliance-frameworks.md"
+    ],
+    "schemas": ["schemas/audit-output.json"],
+    "scripts": []
+  },
+  "conversions": {
+    "cursor": { "output": ".cursor/rules/code-guard.mdc", "transform": "mdc" },
+    "windsurf": { "output": ".windsurf/rules/code-guard.md", "transform": "windsurf" },
+    "copilot": { "output": ".github/copilot-instructions.md", "transform": "append" }
+  },
+  "keywords": ["security", "owasp", "audit", "vulnerability", "secrets", "compliance", "gdpr", "hipaa", "pci-dss", "sast"]
+}

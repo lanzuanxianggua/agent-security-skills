@@ -1,0 +1,32 @@
+{
+  "name": "portable-skills",
+  "version": "1.0.0",
+  "description": "Cross-agent portable skill standard and toolkit. Write skills once, run on Claude Code, Cursor, Windsurf, GitHub Copilot, and any Agent Skills compatible tool.",
+  "author": "agent-security-skills",
+  "license": "MIT",
+  "sourceFormat": "universal",
+  "compatibility": {
+    "claude-code": { "status": "full", "minVersion": "1.0.0" },
+    "cursor": { "status": "full" },
+    "windsurf": { "status": "full" },
+    "copilot": { "status": "partial", "notes": "No schema support; tool mapping not applicable" },
+    "aider": { "status": "experimental", "notes": "Basic Markdown support only" }
+  },
+  "files": {
+    "skill": "SKILL.md",
+    "manifest": "manifest.json",
+    "references": [
+      "references/spec.md",
+      "references/compatibility-matrix.md",
+      "references/migration-guide.md"
+    ],
+    "schemas": ["schemas/portable-skill-schema.json"],
+    "scripts": []
+  },
+  "conversions": {
+    "cursor": { "output": ".cursor/rules/portable-skills.mdc", "transform": "mdc" },
+    "windsurf": { "output": ".windsurf/rules/portable-skills.md", "transform": "windsurf" },
+    "copilot": { "output": ".github/copilot-instructions.md", "transform": "append" }
+  },
+  "keywords": ["portable", "cross-agent", "compatibility", "cursor", "windsurf", "copilot", "skills", "standard", "conversion"]
+}

@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://portable-skills.dev/schemas/portable-skill-schema.json",
+  "title": "Portable Skill Schema",
+  "description": "Schema for validating portable skills against the universal format specification.",
+  "type": "object",
+  "required": ["name", "version", "description", "compatibility"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*[a-z0-9]$",
+      "minLength": 2,
+      "maxLength": 64,
+      "description": "Unique kebab-case identifier for the skill"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9.]+)?$",
+      "description": "Semantic version"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 500,
+      "description": "One-line description of what this skill does"
+    },
+    "author": {
+      "type": "string",
+      "description": "Author name or organization"
+    },
+    "license": {
+      "type": "string",
+      "description": "SPDX license identifier",
+      "default": "MIT"
+    },
+    "sourceFormat": {
+      "type": "string",
+      "enum": ["universal", "claude-code", "cursor", "windsurf", "copilot"],
+      "default": "universal"
+    },
+    "compatibility": {
+      "type": "object",
+      "description": "Platform compatibility declarations",
+      "properties": {
+        "claude-code": {
+          "$ref": "#/$defs/platformCompat"
+        },
+        "cursor": {
+          "$ref": "#/$defs/platformCompat"
+        },
+        "windsurf": {
+          "$ref": "#/$defs/platformCompat"
+        },
+        "copilot": {
+          "$ref": "#/$defs/platformCompat"
+        },
+        "aider": {
+          "$ref": "#/$defs/platformCompat"
+        }
+      }
+    },
+    "files": {
+      "type": "object",
+      "description": "Skill file manifest",
+      "properties": {
+        "skill": {
+          "type": "string",
+          "default": "SKILL.md"
+        },
+        "manifest": {
+          "type": "string",
+          "default": "manifest.json"
+        },
+        "references": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Glob patterns for reference files"
+        },
+        "schemas": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Glob patterns for schema files"
+        },
+        "scripts": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Glob patterns for script files"
+        }
+      }
+    },
+    "conversions": {
+      "type": "object",
+      "description": "Conversion targets and output paths",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["output", "transform"],
+        "properties": {
+          "output": { "type": "string" },
+          "transform": {
+            "type": "string",
+            "enum": ["mdc", "windsurf", "append", "copy", "inline"]
+          }
+        }
+      }
+    },
+    "keywords": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Searchable keywords for skill discovery",
+      "maxItems": 20
+    }
+  },
+  "$defs": {
+    "platformCompat": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["full", "partial", "experimental", "none"],
+          "description": "Compatibility status on this platform"
+        },
+        "minVersion": {
+          "type": "string",
+          "description": "Minimum platform version required"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional compatibility notes"
+        },
+        "limitations": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Known limitations on this platform"
+        }
+      }
+    }
+  }
+}

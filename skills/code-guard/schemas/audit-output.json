@@ -1,0 +1,205 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://code-guard.dev/schemas/audit-output.json",
+  "title": "Code Guard Security Audit Output",
+  "description": "Schema for code-guard skill audit output. Structured security findings with severity, fix suggestions, and compliance checks.",
+  "type": "object",
+  "required": ["skillName", "version", "timestamp", "status", "findings"],
+  "properties": {
+    "skillName": {
+      "type": "string",
+      "const": "code-guard"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["clean", "findings", "critical", "error"]
+    },
+    "scope": {
+      "type": "object",
+      "properties": {
+        "files": { "type": "array", "items": { "type": "string" } },
+        "totalLines": { "type": "integer" },
+        "languages": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
+    },
+    "secrets": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/secretFinding"
+      }
+    },
+    "dependencies": {
+      "type": "object",
+      "properties": {
+        "scanned": { "type": "boolean" },
+        "vulnerabilities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/dependencyVuln"
+          }
+        },
+        "outdated": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "compliance": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/complianceResult"
+      }
+    },
+    "summary": {
+      "$ref": "#/$defs/summary"
+    }
+  },
+  "$defs": {
+    "finding": {
+      "type": "object",
+      "required": ["id", "title", "severity", "category", "location"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^CG-\\d{3,6}$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 200
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["critical", "high", "medium", "low", "info"]
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "injection", "auth", "crypto", "access-control",
+            "misconfig", "xss", "ssrf", "data-exposure",
+            "deserialization", "logging", "csrf", "idor"
+          ]
+        },
+        "owasp": {
+          "type": "string",
+          "pattern": "^A0[1-9]|A10$"
+        },
+        "location": {
+          "type": "object",
+          "required": ["file"],
+          "properties": {
+            "file": { "type": "string" },
+            "line": { "type": "integer" },
+            "endLine": { "type": "integer" },
+            "function": { "type": "string" }
+          }
+        },
+        "codeSnippet": {
+          "type": "string",
+          "maxLength": 3000
+        },
+        "suggestedFix": {
+          "type": "string",
+          "maxLength": 5000
+        },
+        "exploitability": {
+          "type": "string",
+          "enum": ["trivial", "easy", "moderate", "difficult", "theoretical"]
+        },
+        "effort": {
+          "type": "string",
+          "enum": ["trivial", "low", "medium", "high"]
+        }
+      }
+    },
+    "secretFinding": {
+      "type": "object",
+      "required": ["id", "type", "location", "confidence"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^SEC-\\d{3,6}$" },
+        "type": {
+          "type": "string",
+          "enum": ["aws-key", "github-token", "private-key", "api-key",
+                   "database-url", "jwt-secret", "password", "oauth-secret",
+                   "encryption-key", "other"]
+        },
+        "location": {
+          "type": "object",
+          "properties": {
+            "file": { "type": "string" },
+            "line": { "type": "integer" }
+          }
+        },
+        "confidence": {
+          "type": "string",
+          "enum": ["high", "medium", "low"]
+        },
+        "isInGitHistory": { "type": "boolean" },
+        "remediation": { "type": "string" }
+      }
+    },
+    "dependencyVuln": {
+      "type": "object",
+      "required": ["package", "version", "severity"],
+      "properties": {
+        "package": { "type": "string" },
+        "version": { "type": "string" },
+        "severity": { "type": "string", "enum": ["critical", "high", "medium", "low"] },
+        "cve": { "type": "string", "pattern": "^CVE-\\d{4}-\\d+$" },
+        "fixedIn": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "complianceResult": {
+      "type": "object",
+      "required": ["framework", "requirement", "status"],
+      "properties": {
+        "framework": {
+          "type": "string",
+          "enum": ["GDPR", "HIPAA", "PCI-DSS", "SOC2"]
+        },
+        "requirement": { "type": "string" },
+        "status": { "type": "string", "enum": ["pass", "fail", "warning", "not-applicable"] },
+        "description": { "type": "string" },
+        "evidence": { "type": "string" }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "totalFindings": { "type": "integer" },
+        "critical": { "type": "integer" },
+        "high": { "type": "integer" },
+        "medium": { "type": "integer" },
+        "low": { "type": "integer" },
+        "info": { "type": "integer" },
+        "secretsFound": { "type": "integer" },
+        "dependencyVulns": { "type": "integer" },
+        "riskScore": { "type": "number", "minimum": 0, "maximum": 100 },
+        "riskGrade": { "type": "string", "pattern": "^[A-F]$" },
+        "verdict": {
+          "type": "string",
+          "enum": ["safe-to-merge", "merge-with-caution", "do-not-merge", "blocked"]
+        }
+      }
+    }
+  }
+}
