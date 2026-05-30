@@ -32,7 +32,7 @@ gh[ps]_[A-Za-z0-9_]{36,}
 xox[baprs]-[0-9]{10,}-[0-9]{10,}-[0-9a-zA-Z]{24,}
 
 # Stripe Key
-[rk|sk]_(test|live)_[A-Za-z0-9]{24,}
+(?:rk|sk)_(test|live)_[A-Za-z0-9]{24,}
 
 # SendGrid Key
 SG\.[A-Za-z0-9_\-]{22}\.[A-Za-z0-9_\-]{43}
@@ -104,7 +104,7 @@ spring\.(datasource\.(password|username)|security\.oauth2\.client\.(secret|regis
 | `api_key: "YOUR_API_KEY"` | Placeholder text | Skip common placeholders |
 | `secret: ${env.SECRET}` | Env variable reference | Skip `${...}` references |
 | `token: process.env.TOKEN` | Env variable reference | Skip `process.env.*` |
-| `password: "test"` | Test fixture | Skip in `test/` / `__tests__/` |
+| `password: "test"` | Test fixture | Flag at reduced severity |
 | `secret: "secret"` | Literal "secret" | Skip dictionary words |
 | `key: "xxx"` | Masked value | Skip `x+`, `*+`, `#+` patterns |
 
@@ -147,9 +147,7 @@ const { SecretString } = await client.getSecretValue({ SecretId: 'prod/api-key' 
 ### Step 3: Pre-commit Prevention
 ```bash
 # .git/hooks/pre-commit
-# Using detect-secrets
-detect-secrets scan --baseline .secrets.baseline
-if detect-secrets scan --baseline .secrets.baseline | grep -q "Found"; then
+if ! detect-secrets scan --baseline .secrets.baseline 2>/dev/null; then
   echo "ERROR: Secrets detected! Use environment variables instead."
   exit 1
 fi

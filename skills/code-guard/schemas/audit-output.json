@@ -100,7 +100,7 @@
         },
         "owasp": {
           "type": "string",
-          "pattern": "^A0[1-9]|A10$"
+          "pattern": "^(A0[1-9]|A10)$"
         },
         "location": {
           "type": "object",

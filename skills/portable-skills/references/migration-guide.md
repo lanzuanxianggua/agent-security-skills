@@ -31,7 +31,7 @@
 
 ### Automated Conversion
 ```bash
-portable-skills convert --from claude-code --to cursor --input ./skills/code-guard/
+./scripts/convert.sh --input ./skills/code-guard/ --target cursor
 # Output: .cursor/rules/code-guard.mdc
 ```
 
@@ -46,7 +46,7 @@ portable-skills convert --from claude-code --to cursor --input ./skills/code-gua
 5. **Keep scripts**: Bash scripts remain usable
 
 ```bash
-portable-skills convert --from claude-code --to windsurf --input ./skills/code-guard/
+./scripts/convert.sh --input ./skills/code-guard/ --target windsurf
 # Output: .windsurf/rules/code-guard.md
 ```
 
@@ -70,7 +70,7 @@ leaked secrets, and insecure dependencies.
 ```
 
 ```bash
-portable-skills convert --from claude-code --to copilot --input ./skills/code-guard/
+./scripts/convert.sh --input ./skills/code-guard/ --target copilot
 # Output: .github/copilot-instructions.md (appended)
 ```
 
@@ -79,11 +79,10 @@ portable-skills convert --from claude-code --to copilot --input ./skills/code-gu
 ### Batch Conversion
 ```bash
 # Convert all skills to all platforms
-portable-skills convert --input ./skills/ --target all --output ./dist/
+./scripts/convert.sh --input ./skills/ --target all --output ./dist/
 
 # Resulting structure:
 # dist/
-# ├── claude-code/          # Symlink-ready skill directories
 # ├── cursor/               # .cursor/rules/*.mdc files
 # ├── windsurf/             # .windsurf/rules/*.md files
 # ├── copilot/              # .github/copilot-instructions.md
@@ -151,8 +150,8 @@ After conversion, verify:
 
 ```bash
 # Validate converted skill
-portable-skills validate ./dist/cursor/code-guard.mdc --platform cursor
+./scripts/convert.sh --validate ./dist/cursor/code-guard.mdc
 
 # Check compatibility report
-portable-skills report ./skills/code-guard/ --format json
+./scripts/convert.sh --check ./skills/code-guard/ --platform cursor
 ```

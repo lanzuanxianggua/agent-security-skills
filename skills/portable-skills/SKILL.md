@@ -5,6 +5,22 @@ category: tooling
 priority: high
 tokenEstimate: 1000
 tags: [portable, cross-agent, skills, compatibility, cursor, windsurf, copilot, standard]
+triggers:
+  claude-code:
+    - "convert skill for"
+    - "/portable-skills"
+  cursor:
+    - "convert skill to cursor format"
+  windsurf:
+    - "convert skill to windsurf format"
+  copilot:
+    - "make skill portable"
+compatibility:
+  claude-code: full
+  cursor: full
+  windsurf: full
+  copilot: partial
+  aider: experimental
 ---
 
 # Portable Skills — Cross-Agent Skill Standard
@@ -261,26 +277,22 @@ to run multiple scan passes simultaneously.
 </agent:universal>
 ```
 
-## Conversion CLI
+## Conversion CLI (convert.sh)
+
+The conversion tool is at `scripts/convert.sh` in the project root.
 
 ```bash
-# Install
-npm install -g portable-skills
-
 # Convert a single skill
-portable-skills convert --input ./skills/code-guard/ --target cursor
+./scripts/convert.sh --input ./skills/code-guard/ --target cursor
 
 # Convert all skills in a directory
-portable-skills convert --input ./skills/ --target all --output ./converted/
+./scripts/convert.sh --input ./skills/ --target all --output ./converted/
 
 # Validate a skill's portability
-portable-skills validate ./skills/code-guard/
+./scripts/convert.sh --validate ./skills/code-guard/
 
 # Check compatibility matrix
-portable-skills check ./skills/code-guard/ --platform windsurf
-
-# Initialize a new portable skill
-portable-skills init my-new-skill --template security
+./scripts/convert.sh --check ./skills/code-guard/ --platform windsurf
 ```
 
 ## Guardrails

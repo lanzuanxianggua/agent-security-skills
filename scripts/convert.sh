@@ -28,11 +28,10 @@ Usage:
   $(basename "$0") --check <skill-dir> --platform <platform>
 
 Platforms:
-  claude-code    Claude Code (source format)
   cursor         Cursor (.cursor/rules/*.mdc)
   windsurf       Windsurf (.windsurf/rules/*.md)
   copilot        GitHub Copilot (.github/copilot-instructions.md)
-  all            Convert to all platforms
+  all            Convert to all platforms above
 
 Options:
   --input DIR     Input skill directory (must contain SKILL.md)
@@ -145,14 +144,14 @@ convert_to_cursor() {
     echo "---"
     echo "name: $name"
     echo "description: $desc"
-    echo "globs:"
-    echo "  - \"**/*.{ts,tsx,js,jsx,py,java,go,rs,rb,php,cs}\""
+    echo "globs: [\"**/*.{ts,tsx,js,jsx,py,java,go,rs,rb,php,cs}\"]"
     echo "alwaysApply: false"
     echo "---"
     echo ""
 
-    # Extract body (everything after frontmatter)
-    sed -n '/^---$/,/^---$/!p' "$input/SKILL.md" | tail -n +1
+    # Extract body (everything after the SECOND --- delimiter)
+    # Use awk to properly handle only the first frontmatter block
+    awk '/^---$/{n++; next} n>=2{print}' "$input/SKILL.md"
 
     # Inline references
     if [[ -d "$input/references" ]]; then
@@ -216,6 +215,11 @@ convert_to_copilot() {
 
   mkdir -p "$output/.github"
 
+  # Check for duplicate content
+  if [[ -f "$output/.github/copilot-instructions.md" ]] && grep -q "## $name" "$output/.github/copilot-instructions.md" 2>/dev/null; then
+    log_warn "Skill '$name' already exists in copilot-instructions.md — use --force to overwrite, or edit manually"
+  fi
+
   {
     echo "## $name"
     echo ""
@@ -223,7 +227,8 @@ convert_to_copilot() {
     echo ""
 
     # Extract body (strip frontmatter)
-    sed -n '/^---$/,/^---$/!p' "$input/SKILL.md" | tail -n +1
+    # Extract body (everything after the SECOND --- delimiter)
+    awk '/^---$/{n++; next} n>=2{print}' "$input/SKILL.md"
 
     # Inline references
     if [[ -d "$input/references" ]]; then

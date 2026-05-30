@@ -48,7 +48,7 @@ const PII_FIELDS = [
 | Requirement | Implementation |
 |-------------|---------------|
 | Encryption at rest | AES-256 for all PHI storage |
-| Encryption in transit | TLS 1.2+ for all PHI传输 |
+| Encryption in transit | TLS 1.2+ for all PHI transmission |
 | Access control | Role-based access with audit logs |
 | Minimum necessary | Limit PHI access to required fields only |
 | Audit trail | Log all PHI access with user, time, action |
@@ -82,7 +82,7 @@ const PII_FIELDS = [
 ### PAN Detection (Card Number Validation)
 ```typescript
 // Luhn algorithm for card number validation
-function isCardNumber(value: string): boolean {
+function isLikelyCardNumber(value: string): boolean {
   const digits = value.replace(/\D/g, '');
   if (digits.length < 13 || digits.length > 19) return false;
 

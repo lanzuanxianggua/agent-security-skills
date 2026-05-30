@@ -37,6 +37,9 @@ const hash = await bcrypt.hash(password, 12);
 // Encryption — use AES-256-GCM with random IV
 const iv = crypto.randomBytes(16);
 const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+const encrypted = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()]);
+const authTag = cipher.getAuthTag();
+// Store: iv + authTag + encrypted (all three are required for decryption)
 
 // TLS — enforce in config
 app.use((req, res, next) => {
@@ -212,12 +215,14 @@ const ALLOWED_HOSTS = ['api.example.com', 'cdn.example.com'];
 
 function safeFetch(userUrl: string) {
   const parsed = new URL(userUrl);
+  // Check allowlist FIRST — only permitted hosts are allowed
   if (!ALLOWED_HOSTS.includes(parsed.hostname)) {
     throw new Error('Host not allowed');
   }
-  if (parsed.hostname === '169.254.169.254' || parsed.hostname.startsWith('10.')) {
+  // Defense-in-depth: block internal addresses even if in allowlist
+  if (parsed.hostname === '169.254.169.254' || parsed.hostname.startsWith('10.') || parsed.hostname.startsWith('192.168.') || parsed.hostname.startsWith('172.')) {
     throw new Error('Internal addresses not allowed');
   }
-  return fetch(userUrl);
+  return fetch(parsed.href); // Use validated URL, not original input
 }
 ```

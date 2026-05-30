@@ -1,4 +1,5 @@
 {
+  "$schema": "schemas/portable-skill-schema.json",
   "name": "portable-skills",
   "version": "1.0.0",
   "description": "Cross-agent portable skill standard and toolkit. Write skills once, run on Claude Code, Cursor, Windsurf, GitHub Copilot, and any Agent Skills compatible tool.",

@@ -1,4 +1,5 @@
 {
+  "$schema": "schemas/audit-output.json",
   "name": "code-guard",
   "version": "1.0.0",
   "description": "AI-powered code security audit skill. Scans for OWASP Top 10 vulnerabilities, leaked secrets, insecure dependencies, and compliance violations.",
@@ -21,8 +22,7 @@
       "references/secret-detection.md",
       "references/compliance-frameworks.md"
     ],
-    "schemas": ["schemas/audit-output.json"],
-    "scripts": []
+    "schemas": ["schemas/audit-output.json"]
   },
   "conversions": {
     "cursor": { "output": ".cursor/rules/code-guard.mdc", "transform": "mdc" },

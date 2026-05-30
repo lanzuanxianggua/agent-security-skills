@@ -3,7 +3,7 @@ name: code-guard
 description: "AI-powered code security audit skill. Scans for OWASP Top 10 vulnerabilities, leaked secrets, insecure dependencies, and compliance violations. Outputs structured findings with severity ratings and fix suggestions."
 category: security
 priority: critical
-tokenEstimate: 1200
+tokenEstimate: 4500
 tags: [security, owasp, audit, vulnerability, secrets, compliance, sast]
 ---
 
@@ -83,7 +83,7 @@ RED FLAGS:
 ### A02 — Cryptographic Failures
 ```
 RED FLAGS:
-- HTTP used for sensitive data传输
+- HTTP used for sensitive data transmission
 - Weak hash algorithms (MD5, SHA1) for passwords
 - Hardcoded encryption keys
 - Missing TLS certificate verification
@@ -270,30 +270,36 @@ Every audit MUST produce structured findings:
 - ALWAYS check configuration files, not just source code
 - ALWAYS consider the attack surface from an external perspective
 
-## Integration Patterns
+## Integration with Real Tools
 
-### Pre-commit Hook
+### Pre-commit Hook (using detect-secrets)
 ```bash
 # .git/hooks/pre-commit
-npx code-guard scan --severity high --fail-on critical --diff-only
-```
-
-### CI/CD Pipeline
-```yaml
-# GitHub Actions
-- name: Security Audit
-  run: npx code-guard scan --format sarif --output results.sarif
-```
-
-### IDE Integration
-```json
-// VS Code settings.json
-{
-  "code-guard.severityThreshold": "medium",
-  "code-guard.scanOnSave": true
+detect-secrets scan --baseline .secrets.baseline --list-all || {
+  echo "ERROR: Secrets detected! Use environment variables instead."
+  exit 1
 }
 ```
 
+### CI/CD Pipeline (using semgrep)
+```yaml
+# GitHub Actions
+- name: Security Audit (semgrep)
+  uses: semgrep/semgrep-action@v1
+  with:
+    config: p/owasp-top-ten
+
+- name: Secret Scan (trufflehog)
+  uses: trufflesecurity/trufflehog@main
+  with:
+    extra_args: --only-verified
+```
+
+### IDE Integration
+Configure your IDE to run these tools on save or via tasks:
+- **semgrep**: Real-time SAST scanning for OWASP patterns
+- **detect-secrets**: Pre-commit secret detection
+- **npm audit / pip-audit**: Dependency vulnerability scanning
+
 ## Related Skills
 - [portable-skills](../portable-skills/) — Cross-agent portability standard
-- [code-review-quality](../code-review-quality/) — General code review quality
