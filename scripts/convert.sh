@@ -20,6 +20,9 @@ NC='\033[0m'
 parse_frontmatter() {
   local file="$1"
   local field="$2"
+  if [[ ! -f "$file" ]]; then
+    return 1
+  fi
   awk -v field="$field" '
     # State: 0 = before first ---, 1 = inside frontmatter, 2 = past frontmatter
     /^---[[:space:]]*$/ {
@@ -45,10 +48,10 @@ parse_frontmatter() {
   ' state=0 found=0 "$file"
 }
 
-log_info()  { echo -e "${BLUE}[INFO]${NC} $1"; }
-log_ok()    { echo -e "${GREEN}[OK]${NC} $1"; }
-log_warn()  { echo -e "${YELLOW}[WARN]${NC} $1"; }
-log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
+log_info()  { printf '%b%s%b %s\n' "$BLUE" "[INFO]" "$NC" "$1"; }
+log_ok()    { printf '%b%s%b %s\n' "$GREEN" "[OK]" "$NC" "$1"; }
+log_warn()  { printf '%b%s%b %s\n' "$YELLOW" "[WARN]" "$NC" "$1"; }
+log_error() { printf '%b%s%b %s\n' "$RED" "[ERROR]" "$NC" "$1"; }
 
 usage() {
   cat <<EOF
@@ -99,7 +102,7 @@ while [[ $# -gt 0 ]]; do
     --check)   CHECK="$2"; shift 2 ;;
     --platform) CHECK_PLATFORM="$2"; shift 2 ;;
     --help|-h) usage ;;
-    *) log_error "Unknown option: $1"; usage ;;
+    *) log_error "Unknown option: $1"; echo ""; exit 1 ;;
   esac
 done
 
@@ -119,11 +122,11 @@ validate_skill() {
 
   # Check SKILL.md has required frontmatter
   if [[ -f "$dir/SKILL.md" ]]; then
-    if ! grep -q "^name:" "$dir/SKILL.md"; then
+    if ! grep -q "^[[:space:]]*name:" "$dir/SKILL.md"; then
       log_error "SKILL.md missing required 'name' field in frontmatter"
       ((errors++))
     fi
-    if ! grep -q "^description:" "$dir/SKILL.md"; then
+    if ! grep -q "^[[:space:]]*description:" "$dir/SKILL.md"; then
       log_error "SKILL.md missing required 'description' field in frontmatter"
       ((errors++))
     fi
@@ -165,26 +168,37 @@ convert_to_cursor() {
   local output="$2"
   local name
   name=$(parse_frontmatter "$input/SKILL.md" "name")
+  if [[ -z "$name" ]]; then
+    log_error "Skill name is empty in $input/SKILL.md"
+    return 1
+  fi
 
-  mkdir -p "$output/.cursor/rules"
+  mkdir -p "$output/.cursor/rules" || { log_error "Cannot create output directory"; return 1; }
 
   # Extract description from frontmatter
   local desc
   desc=$(parse_frontmatter "$input/SKILL.md" "description")
 
+  # Extract globs from frontmatter (optional)
+  local globs
+  globs=$(parse_frontmatter "$input/SKILL.md" "globs")
+  if [[ -z "$globs" ]]; then
+    globs='**/*.{ts,tsx,js,jsx,py,java,go,rs,rb,php,cs}'
+  fi
+
   # Create MDC file with Cursor frontmatter
   {
     echo "---"
-    echo "name: $name"
-    echo "description: $desc"
-    echo "globs: [\"**/*.{ts,tsx,js,jsx,py,java,go,rs,rb,php,cs}\"]"
+    echo "name: \"$name\""
+    echo "description: \"$desc\""
+    echo "globs: [\"$globs\"]"
     echo "alwaysApply: false"
     echo "---"
     echo ""
 
     # Extract body (everything after the SECOND --- delimiter)
     # Use awk to properly handle only the first frontmatter block
-    awk '/^---$/{n++; next} n>=2{print}' "$input/SKILL.md"
+    awk '/^---[[:space:]]*$/{n++; next} n>=2{print}' "$input/SKILL.md"
 
     # Inline references
     if [[ -d "$input/references" ]]; then
@@ -211,8 +225,12 @@ convert_to_windsurf() {
   local output="$2"
   local name
   name=$(parse_frontmatter "$input/SKILL.md" "name")
+  if [[ -z "$name" ]]; then
+    log_error "Skill name is empty in $input/SKILL.md"
+    return 1
+  fi
 
-  mkdir -p "$output/.windsurf/rules"
+  mkdir -p "$output/.windsurf/rules" || { log_error "Cannot create output directory"; return 1; }
 
   {
     # Copy SKILL.md as-is (Windsurf supports frontmatter)
@@ -243,10 +261,20 @@ convert_to_copilot() {
   local output="$2"
   local name
   name=$(parse_frontmatter "$input/SKILL.md" "name")
+  if [[ -z "$name" ]]; then
+    log_error "Skill name is empty in $input/SKILL.md"
+    return 1
+  fi
   local desc
   desc=$(parse_frontmatter "$input/SKILL.md" "description")
 
-  mkdir -p "$output/.github"
+  mkdir -p "$output/.github" || { log_error "Cannot create output directory"; return 1; }
+
+  # Initialize copilot-instructions.md on first creation
+  if [[ ! -f "$output/.github/copilot-instructions.md" ]]; then
+    echo "# Copilot Instructions" > "$output/.github/copilot-instructions.md"
+    echo "" >> "$output/.github/copilot-instructions.md"
+  fi
 
   # Check for duplicate content
   if [[ -f "$output/.github/copilot-instructions.md" ]] && grep -q "## $name" "$output/.github/copilot-instructions.md" 2>/dev/null; then
@@ -261,7 +289,7 @@ convert_to_copilot() {
 
     # Extract body (strip frontmatter)
     # Extract body (everything after the SECOND --- delimiter)
-    awk '/^---$/{n++; next} n>=2{print}' "$input/SKILL.md"
+    awk '/^---[[:space:]]*$/{n++; next} n>=2{print}' "$input/SKILL.md"
 
     # Inline references
     if [[ -d "$input/references" ]]; then
@@ -297,6 +325,12 @@ if [[ -n "$CHECK" ]]; then
     exit 1
   fi
   if command -v jq &>/dev/null; then
+    valid_platforms="claude-code cursor windsurf copilot aider"
+    if ! echo "$valid_platforms" | grep -qw "$CHECK_PLATFORM"; then
+      log_error "Invalid platform: $CHECK_PLATFORM"
+      log_error "Valid platforms: $valid_platforms"
+      exit 1
+    fi
     status=$(jq -r ".compatibility.\"$CHECK_PLATFORM\".status // \"unknown\"" "$CHECK/manifest.json")
     notes=$(jq -r ".compatibility.\"$CHECK_PLATFORM\".notes // \"\"" "$CHECK/manifest.json")
     if [[ "$status" == "null" || "$status" == "unknown" ]]; then
@@ -317,7 +351,6 @@ fi
 if [[ -z "$INPUT" || -z "$TARGET" ]]; then
   log_error "Both --input and --target are required for conversion"
   exit 1
-  usage
 fi
 
 if [[ ! -d "$INPUT" ]]; then
@@ -325,9 +358,15 @@ if [[ ! -d "$INPUT" ]]; then
   exit 1
 fi
 
+OUTPUT="${OUTPUT:-./dist}"
+
 # Batch mode: if INPUT has no SKILL.md but has subdirectories with SKILL.md, process all
 if [[ ! -f "$INPUT/SKILL.md" ]]; then
   found=0
+  # Clean stale copilot output for fresh batch conversion
+  if [[ "$TARGET" == "copilot" || "$TARGET" == "all" ]] && [[ -n "$OUTPUT" ]]; then
+    rm -f "$OUTPUT/.github/copilot-instructions.md"
+  fi
   for dir in "$INPUT"/*/; do
     if [[ -f "${dir}SKILL.md" ]]; then
       skill_name=$(basename "$dir")
@@ -356,8 +395,6 @@ if [[ ! -f "$INPUT/SKILL.md" ]]; then
   log_ok "Batch conversion complete in $OUTPUT"
   exit 0
 fi
-
-OUTPUT="${OUTPUT:-./dist}"
 
 case "$TARGET" in
   cursor)

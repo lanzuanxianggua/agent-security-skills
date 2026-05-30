@@ -282,7 +282,7 @@ app.post('/api/transfer', async (req, res) => {
 - `Access-Control-Allow-Origin` reflecting the request `Origin` header verbatim
 - `Access-Control-Allow-Origin: null` (attackers can send null origin from sandboxed iframes)
 - No `Access-Control-Allow-Methods` restriction (allows DELETE, PUT)
-- Wildcard subdomain matching: `.example.com` logic that also matches `evil.example.com.attacker.com`
+- Wildcard subdomain matching: regex like `/^https?:\/\/.*\.example\.com$/` bypassed via `https://evil.com/.example.com` (path contains `.example.com`)
 - Preflight responses cached too long or missing `Vary: Origin`
 
 ```typescript
@@ -295,7 +295,7 @@ app.use((req, res, next) => {
 
 // RED FLAG — regex bypass
 const allowed = /^https?:\/\/.*\.example\.com$/;
-// Matches https://evil.example.com.attacker.com because .* is greedy
+// Matches https://evil.com/.example.com — the .* matches everything up to the final .example.com in the string
 
 // RED FLAG — null origin accepted
 if (origin === 'null' || origin === undefined) {

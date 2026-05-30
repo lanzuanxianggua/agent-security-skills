@@ -1,5 +1,5 @@
 {
-  "$schema": "schemas/audit-output.json",
+  "validationSchema": "schemas/portable-skill-schema.json",
   "name": "code-guard",
   "version": "1.0.0",
   "description": "AI-powered code security audit skill. Scans for OWASP Top 10 vulnerabilities, leaked secrets, insecure dependencies, and compliance violations.",
@@ -20,7 +20,8 @@
       "references/owasp-top10.md",
       "references/dependency-security.md",
       "references/secret-detection.md",
-      "references/compliance-frameworks.md"
+      "references/compliance-frameworks.md",
+      "references/additional-vulns.md"
     ],
     "schemas": ["schemas/audit-output.json"]
   },

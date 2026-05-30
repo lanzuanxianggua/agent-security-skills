@@ -180,3 +180,50 @@ teardown() {
   run bash "$CONVERT" --input "/nonexistent/path/" --target cursor
   [ "$status" -ne 0 ]
 }
+
+# ─── Additional coverage ──────────────────────────────────────────
+
+@test "check fails without --platform flag" {
+  run bash "$CONVERT" --check "${REPO_ROOT}/skills/code-guard/"
+  [ "$status" -ne 0 ]
+}
+
+@test "convert body content preserves SKILL.md body" {
+  bash "$CONVERT" --input "${REPO_ROOT}/skills/code-guard/" --target cursor --output "$DIST_DIR"
+  run cat "${DIST_DIR}/.cursor/rules/code-guard.mdc"
+  echo "$output" | grep -q "Quick Audit Checklist"
+}
+
+@test "copilot duplicate detection warns on second run" {
+  bash "$CONVERT" --input "${REPO_ROOT}/skills/code-guard/" --target copilot --output "$DIST_DIR"
+  run bash "$CONVERT" --input "${REPO_ROOT}/skills/code-guard/" --target copilot --output "$DIST_DIR"
+  echo "$output" | grep -qi "already exists"
+}
+
+@test "references are inlined in cursor output" {
+  bash "$CONVERT" --input "${REPO_ROOT}/skills/code-guard/" --target cursor --output "$DIST_DIR"
+  run cat "${DIST_DIR}/.cursor/rules/code-guard.mdc"
+  echo "$output" | grep -q "## References"
+  echo "$output" | grep -q "### owasp-top10"
+}
+
+@test "batch mode creates fresh copilot output" {
+  mkdir -p "${DIST_DIR}/.github"
+  echo "## stale-content" > "${DIST_DIR}/.github/copilot-instructions.md"
+  run bash "$CONVERT" --input "${REPO_ROOT}/skills/" --target copilot --output "$DIST_DIR"
+  [ "$status" -eq 0 ]
+  ! grep -q "stale-content" "${DIST_DIR}/.github/copilot-instructions.md"
+}
+
+@test "empty name field is rejected" {
+  mkdir -p "${TEST_DIR}/empty-name"
+  echo -e "---\ndescription: \"no name\"\n---" > "${TEST_DIR}/empty-name/SKILL.md"
+  run bash "$CONVERT" --input "${TEST_DIR}/empty-name/" --target cursor --output "$DIST_DIR"
+  [ "$status" -ne 0 ]
+}
+
+@test "copilot first run creates header" {
+  bash "$CONVERT" --input "${REPO_ROOT}/skills/code-guard/" --target copilot --output "$DIST_DIR"
+  run head -1 "${DIST_DIR}/.github/copilot-instructions.md"
+  echo "$output" | grep -q "Copilot Instructions"
+}

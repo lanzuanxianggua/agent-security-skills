@@ -95,7 +95,8 @@
           "enum": [
             "injection", "auth", "crypto", "access-control",
             "misconfig", "xss", "ssrf", "data-exposure",
-            "deserialization", "logging", "csrf", "idor"
+            "deserialization", "logging", "csrf", "idor",
+            "insecure-design"
           ]
         },
         "owasp": {
@@ -174,7 +175,7 @@
       "properties": {
         "framework": {
           "type": "string",
-          "enum": ["GDPR", "HIPAA", "PCI-DSS", "SOC2"]
+          "enum": ["GDPR", "HIPAA", "PCI-DSS", "SOC 2"]
         },
         "requirement": { "type": "string" },
         "status": { "type": "string", "enum": ["pass", "fail", "warning", "not-applicable"] },

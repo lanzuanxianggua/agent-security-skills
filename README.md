@@ -210,7 +210,8 @@ agent-security-skills/
 │   │   │   ├── owasp-top10.md        # OWASP Top 10 detection & fix patterns
 │   │   │   ├── dependency-security.md # Dependency audit guide
 │   │   │   ├── secret-detection.md   # Secret detection regex & remediation
-│   │   │   └── compliance-frameworks.md # GDPR, HIPAA, PCI-DSS, SOC 2
+│   │   │   ├── compliance-frameworks.md # GDPR, HIPAA, PCI-DSS, SOC 2
+│   │   │   └── additional-vulns.md      # Advanced vulnerability patterns
 │   │   └── schemas/
 │   │       └── audit-output.json     # Structured output schema
 │   └── portable-skills/
@@ -222,6 +223,9 @@ agent-security-skills/
 │       │   └── migration-guide.md    # Conversion instructions
 │       └── schemas/
 │           └── portable-skill-schema.json # Skill validation schema
+├── tests/
+│   ├── convert.bats                  # Test suite
+│   └── run.sh                        # Test runner
 └── examples/
     └── sample-audit-report.md        # Example code-guard output
 ```
@@ -327,7 +331,7 @@ app.get('/users', (req, res) => {
 ## 功能特性
 
 - **OWASP Top 10** 漏洞检测，提供 TypeScript、Python、Go、Java 的代码修复建议
-- **密钥检测** — AWS 密钥、GitHub 令牌、Stripe 密钥、SSH 私钥、JWT 密钥等 15+ 种类型
+- **凭据与密钥检测** — AWS 密钥、GitHub 令牌、Stripe 密钥、SSH 私钥、JWT 密钥等 15+ 种类型
 - **依赖审计** — npm、pip、maven、cargo、go，支持 CVE 追踪
 - **合规检查** — GDPR、HIPAA、PCI-DSS、SOC 2
 - **跨平台移植** — 支持 Claude Code、Cursor、Windsurf、GitHub Copilot
@@ -336,7 +340,7 @@ app.get('/users', (req, res) => {
 
 ---
 
-## 与 semgrep / SonarQube / Snyk 的对比
+## 为什么不用 semgrep / SonarQube / Snyk？
 
 | | code-guard | semgrep | SonarQube | Snyk |
 |---|:---:|:---:|:---:|:---:|
@@ -463,7 +467,8 @@ agent-security-skills/
 │   │   │   ├── owasp-top10.md        # OWASP Top 10 检测与修复模式
 │   │   │   ├── dependency-security.md # 依赖审计指南
 │   │   │   ├── secret-detection.md   # 密钥检测正则与修复指南
-│   │   │   └── compliance-frameworks.md # GDPR、HIPAA、PCI-DSS、SOC 2
+│   │   │   ├── compliance-frameworks.md # GDPR、HIPAA、PCI-DSS、SOC 2
+│   │   │   └── additional-vulns.md      # 高级漏洞模式
 │   │   └── schemas/
 │   │       └── audit-output.json     # 结构化输出 Schema
 │   └── portable-skills/
@@ -475,6 +480,9 @@ agent-security-skills/
 │       │   └── migration-guide.md    # 转换指南
 │       └── schemas/
 │           └── portable-skill-schema.json # 技能包验证 Schema
+├── tests/
+│   ├── convert.bats
+│   └── run.sh
 └── examples/
     └── sample-audit-report.md        # code-guard 输出示例
 ```

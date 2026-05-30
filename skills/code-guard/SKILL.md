@@ -5,6 +5,14 @@ category: security
 priority: critical
 tokenEstimate: 4500
 tags: [security, owasp, audit, vulnerability, secrets, compliance, sast]
+version: "1.0.0"
+author: "agent-security-skills"
+tools:
+  - Read
+  - Grep
+  - Glob
+  - Bash
+globs: "**/*"
 ---
 
 # Code Guard — AI Code Security Audit
@@ -177,7 +185,7 @@ Scan for these patterns in all source files:
 | Pattern | Regex Hint | Risk |
 |---------|-----------|------|
 | AWS Access Key | `AKIA[0-9A-Z]{16}` | Critical |
-| AWS Secret Key | Base64 40-char string near AWS key | Critical |
+| AWS Secret Key | `(?i)aws[_\-]?secret[_\-]?access[_\-]?key\s*[=:]\s*['"][A-Za-z0-9/+=]{40}['"]` | Critical |
 | GitHub Token | `gh[ps]_[A-Za-z0-9_]{36,}` | Critical |
 | Private SSH Key | `BEGIN (RSA\|EC\|OPENSSH) PRIVATE KEY` | Critical |
 | Generic API Key | `[Aa]pi[_-]?[Kk]ey\s*[:=]\s*['"][^'"]+['"]` | High |

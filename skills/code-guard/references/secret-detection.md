@@ -28,6 +28,9 @@ AKIA[0-9A-Z]{16}
 # GitHub Token
 gh[ps]_[A-Za-z0-9_]{36,}
 
+# GitHub Fine-grained PAT
+github_pat_[A-Za-z0-9_]{22,}
+
 # Slack Token
 xox[baprs]-[0-9]{10,}-[0-9]{10,}-[0-9a-zA-Z]{24,}
 
@@ -37,7 +40,7 @@ xox[baprs]-[0-9]{10,}-[0-9]{10,}-[0-9a-zA-Z]{24,}
 # SendGrid Key
 SG\.[A-Za-z0-9_\-]{22}\.[A-Za-z0-9_\-]{43}
 
-# Twilio Key
+# Twilio Key (Note: may produce false positives since SK is a common prefix)
 SK[A-Za-z0-9]{32}
 
 # Google API Key
@@ -134,7 +137,7 @@ If a real secret is found in code:
 ### Step 2: Use Secrets Management
 ```typescript
 // BAD — hardcoded
-const apiKey = "sk_live_abc123";
+const apiKey = "sk_live_YOUR_TEST_KEY_HERE";
 
 // GOOD — environment variable
 const apiKey = process.env.API_KEY;
@@ -174,6 +177,6 @@ def entropy(s: str) -> float:
     total = len(s)
     return -sum((c/total) * math.log2(c/total) for c in counts.values())
 
-# Example: "AKIAIOSFODNN7EXAMPLE" → entropy ≈ 3.8 (moderate)
+# Example: "// Example only — not a real AWS key" AKIAIOSFODNN7EXAMPLE → entropy ≈ 3.8 (moderate)
 # Example: "sk_live_EXAMPLE_REPLACE_WITH_REAL_KEY" → entropy ≈ 4.7 (high — likely secret)
 ```

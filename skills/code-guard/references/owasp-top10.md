@@ -213,6 +213,23 @@ import { URL } from 'url';
 
 const ALLOWED_HOSTS = ['api.example.com', 'cdn.example.com'];
 
+function isPrivateIP(hostname: string): boolean {
+  // 10.0.0.0/8
+  if (hostname.startsWith('10.')) return true;
+  // 172.16.0.0/12 (172.16.0.0 - 172.31.255.255 only, NOT all 172.x)
+  if (hostname.startsWith('172.')) {
+    const second = parseInt(hostname.split('.')[1], 10);
+    if (second >= 16 && second <= 31) return true;
+  }
+  // 192.168.0.0/16
+  if (hostname.startsWith('192.168.')) return true;
+  // 127.0.0.0/8 (loopback)
+  if (hostname.startsWith('127.')) return true;
+  // 169.254.0.0/16 (link-local / cloud metadata)
+  if (hostname.startsWith('169.254.')) return true;
+  return false;
+}
+
 function safeFetch(userUrl: string) {
   const parsed = new URL(userUrl);
   // Check allowlist FIRST — only permitted hosts are allowed
@@ -220,7 +237,7 @@ function safeFetch(userUrl: string) {
     throw new Error('Host not allowed');
   }
   // Defense-in-depth: block internal addresses even if in allowlist
-  if (parsed.hostname === '169.254.169.254' || parsed.hostname.startsWith('10.') || parsed.hostname.startsWith('192.168.') || parsed.hostname.startsWith('172.')) {
+  if (isPrivateIP(parsed.hostname)) {
     throw new Error('Internal addresses not allowed');
   }
   return fetch(parsed.href); // Use validated URL, not original input

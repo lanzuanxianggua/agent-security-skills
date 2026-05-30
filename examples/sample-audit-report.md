@@ -69,3 +69,86 @@
 
 **Risk Score:** 28/100 (Grade: D)
 **Verdict:** DO NOT MERGE — fix critical and high findings before deploying
+
+---
+
+## JSON Format (Schema-Compliant)
+
+```json
+{
+  "skillName": "code-guard",
+  "version": "1.0.0",
+  "timestamp": "2026-05-30T12:00:00Z",
+  "status": "critical",
+  "scope": {
+    "files": ["src/api/users.ts", "config/production.ts", "src/routes/auth.ts"],
+    "totalLines": 247,
+    "languages": ["typescript"]
+  },
+  "findings": [
+    {
+      "id": "CG-001",
+      "title": "SQL Injection in User Search",
+      "severity": "critical",
+      "category": "injection",
+      "owasp": "A03",
+      "location": { "file": "src/api/users.ts", "line": 42, "function": "getUsers" },
+      "suggestedFix": "Use parameterized queries instead of string interpolation.",
+      "exploitability": "trivial",
+      "effort": "trivial"
+    },
+    {
+      "id": "CG-002",
+      "title": "Missing Authentication on Admin Endpoints",
+      "severity": "high",
+      "category": "access-control",
+      "owasp": "A01",
+      "location": { "file": "src/routes/admin.ts", "line": 15, "function": "adminRoutes" },
+      "suggestedFix": "Add auth middleware to admin routes.",
+      "exploitability": "trivial",
+      "effort": "low"
+    },
+    {
+      "id": "CG-003",
+      "title": "Missing Rate Limiting on Login",
+      "severity": "medium",
+      "category": "insecure-design",
+      "owasp": "A07",
+      "location": { "file": "src/routes/auth.ts", "line": 45, "function": "login" },
+      "suggestedFix": "Add rate limiting middleware (e.g., express-rate-limit).",
+      "exploitability": "easy",
+      "effort": "low"
+    }
+  ],
+  "secrets": [
+    {
+      "id": "SEC-001",
+      "type": "aws-key",
+      "location": { "file": "config/production.ts", "line": 12 },
+      "confidence": "high",
+      "remediation": "Move to environment variable, rotate immediately"
+    }
+  ],
+  "compliance": [
+    {
+      "framework": "PCI-DSS",
+      "requirement": "6.5.1",
+      "status": "fail",
+      "severity": "critical",
+      "description": "SQL injection vulnerability violates PCI-DSS Requirement 6.5.1"
+    }
+  ],
+  "summary": {
+    "totalFindings": 3,
+    "critical": 1,
+    "high": 1,
+    "medium": 1,
+    "low": 0,
+    "info": 0,
+    "secretsFound": 1,
+    "riskScore": 28,
+    "riskGrade": "D",
+    "verdict": "do-not-merge"
+  }
+}
+```

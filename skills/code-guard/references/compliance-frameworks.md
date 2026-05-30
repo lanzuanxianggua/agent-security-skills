@@ -101,7 +101,11 @@ function isLikelyCardNumber(value: string): boolean {
 }
 ```
 
-## SOC 2 (Service Organization Control 2)
+## SOC2 / SOC 2 (Service Organization Control 2)
+
+> **Note:** The audit output schema (`schemas/audit-output.json`) uses the
+> canonical enum value **`SOC2`** (no space). Always reference the framework
+> as `SOC2` in structured output; "SOC 2" is the human-readable form.
 
 ### Trust Service Criteria
 | Category | Code-Level Requirements |
@@ -112,7 +116,7 @@ function isLikelyCardNumber(value: string): boolean {
 | Confidentiality | Data classification, encryption, access policies |
 | Privacy | PII handling, consent, retention, deletion |
 
-### SOC 2 Audit Patterns
+### SOC2 Audit Patterns
 ```markdown
 - [ ] All data access logged with user context
 - [ ] Failed access attempts logged and alerted
@@ -126,27 +130,64 @@ function isLikelyCardNumber(value: string): boolean {
 
 ## Compliance Output Format
 
+The following example matches the `complianceResult` objects defined in
+`schemas/audit-output.json`. Each entry lives in the top-level `compliance`
+array and contains: `framework`, `requirement`, `status`, `severity`,
+`description`, and `evidence`.
+
 ```json
 {
-  "framework": "GDPR",
-  "version": "2016/679",
-  "findings": [
+  "skillName": "code-guard",
+  "version": "1.0.0",
+  "timestamp": "2025-06-15T10:30:00Z",
+  "status": "findings",
+  "findings": [],
+  "compliance": [
     {
-      "id": "GDPR-001",
+      "framework": "GDPR",
       "requirement": "Article 17 - Right to Erasure",
       "status": "fail",
       "severity": "high",
       "description": "User deletion endpoint does not remove related order history",
-      "location": "src/api/users.ts:85",
-      "remediation": "Add cascade delete for all user-related data tables",
-      "evidence": "DELETE query only targets users table"
+      "evidence": "DELETE query only targets users table; order_history table is not cascaded"
+    },
+    {
+      "framework": "SOC2",
+      "requirement": "CC6.1 - Logical and Physical Access Controls",
+      "status": "pass",
+      "severity": "low",
+      "description": "All data access is logged with user context",
+      "evidence": "Access log middleware present on all PII endpoints"
+    },
+    {
+      "framework": "HIPAA",
+      "requirement": "164.312(a)(1) - Access Control",
+      "status": "warning",
+      "severity": "medium",
+      "description": "PHI access controls exist but lack field-level restrictions",
+      "evidence": "RBAC applies at endpoint level only; no column-level ACLs"
+    },
+    {
+      "framework": "PCI-DSS",
+      "requirement": "Req 3.4 - Render PAN Unreadable",
+      "status": "fail",
+      "severity": "critical",
+      "description": "Card numbers stored in plaintext in database",
+      "evidence": "payment_cards table stores raw PAN without encryption"
     }
   ],
-  "score": {
-    "total": 25,
-    "passed": 21,
-    "failed": 4,
-    "percentage": 84
+  "summary": {
+    "totalFindings": 0,
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "info": 0,
+    "secretsFound": 0,
+    "dependencyVulns": 0,
+    "riskScore": 45,
+    "riskGrade": "C",
+    "verdict": "merge-with-caution"
   }
 }
 ```

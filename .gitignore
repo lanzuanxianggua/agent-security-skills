@@ -6,3 +6,20 @@ release/
 .env
 .env.*
 !.env.example
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+*.tmp
+
+# Test
+coverage/
+test-output/
+
+# Claude Code local
+.claude/
