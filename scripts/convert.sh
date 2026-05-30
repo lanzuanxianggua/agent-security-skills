@@ -309,7 +309,9 @@ convert_to_copilot() {
   log_ok "Converted to Copilot: $output/.github/copilot-instructions.md (appended)"
 }
 
-# Main logic
+# Main logic — only run when executed directly, not when sourced
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+
 if [[ -n "$VALIDATE" ]]; then
   validate_skill "$VALIDATE"
   exit $?
@@ -417,3 +419,5 @@ case "$TARGET" in
     exit 1
     ;;
 esac
+
+fi # end main logic guard

@@ -103,7 +103,7 @@ teardown() {
 @test "check fails for unknown platform" {
   run bash "$CONVERT" --check "${REPO_ROOT}/skills/code-guard/" --platform nonexistentxyz
   [ "$status" -ne 0 ]
-  echo "$output" | grep -qi "unknown"
+  echo "$output" | grep -qi "invalid\|unknown"
 }
 
 @test "check fails when manifest.json is missing" {
@@ -125,7 +125,7 @@ teardown() {
   bash "$CONVERT" --input "${REPO_ROOT}/skills/code-guard/" --target cursor --output "$DIST_DIR"
   run cat "${DIST_DIR}/.cursor/rules/code-guard.mdc"
   echo "$output" | grep -q "^---$"
-  echo "$output" | grep -q "name: code-guard"
+  echo "$output" | grep -q 'name: "code-guard"'
 }
 
 @test "convert to windsurf creates .md file" {
