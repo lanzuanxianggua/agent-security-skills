@@ -13,6 +13,38 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
+# Robust YAML frontmatter parser using awk only.
+# Usage: parse_frontmatter <file> <field-name>
+# Handles single-quoted, double-quoted, and unquoted values.
+# Works on Linux, macOS, and Git Bash (MSYS2/Cygwin).
+parse_frontmatter() {
+  local file="$1"
+  local field="$2"
+  awk -v field="$field" '
+    # State: 0 = before first ---, 1 = inside frontmatter, 2 = past frontmatter
+    /^---[[:space:]]*$/ {
+      if (state == 0) { state = 1; next }
+      if (state == 1) { state = 2; next }
+    }
+    state != 1 { next }
+    # Only look at lines that start with the target field name (allow leading spaces)
+    $0 ~ "^[[:space:]]*" field ":" {
+      # Remove leading spaces, the field name, and the colon
+      val = $0
+      sub("^[[:space:]]*" field ":[[:space:]]*", "", val)
+      # Strip surrounding quotes (single or double, matched pair)
+      if (val ~ /^".*"$/)  { gsub(/^"/, "", val); gsub(/"$/, "", val) }
+      if (val ~ /^'"'"'.*'"'"'$/) { gsub(/^'"'"'/, "", val); gsub(/'"'"'$/, "", val) }
+      # Strip any trailing whitespace
+      sub(/[[:space:]]+$/, "", val)
+      print val
+      found = 1
+      exit
+    }
+    { next }
+  ' state=0 found=0 "$file"
+}
+
 log_info()  { echo -e "${BLUE}[INFO]${NC} $1"; }
 log_ok()    { echo -e "${GREEN}[OK]${NC} $1"; }
 log_warn()  { echo -e "${YELLOW}[WARN]${NC} $1"; }
@@ -132,13 +164,13 @@ convert_to_cursor() {
   local input="$1"
   local output="$2"
   local name
-  name=$(grep "^name:" "$input/SKILL.md" | head -1 | sed 's/name: *//' | tr -d '"')
+  name=$(parse_frontmatter "$input/SKILL.md" "name")
 
   mkdir -p "$output/.cursor/rules"
 
   # Extract description from frontmatter
   local desc
-  desc=$(grep "^description:" "$input/SKILL.md" | head -1 | sed 's/description: *//' | tr -d '"')
+  desc=$(parse_frontmatter "$input/SKILL.md" "description")
 
   # Create MDC file with Cursor frontmatter
   {
@@ -178,7 +210,7 @@ convert_to_windsurf() {
   local input="$1"
   local output="$2"
   local name
-  name=$(grep "^name:" "$input/SKILL.md" | head -1 | sed 's/name: *//' | tr -d '"')
+  name=$(parse_frontmatter "$input/SKILL.md" "name")
 
   mkdir -p "$output/.windsurf/rules"
 
@@ -210,9 +242,9 @@ convert_to_copilot() {
   local input="$1"
   local output="$2"
   local name
-  name=$(grep "^name:" "$input/SKILL.md" | head -1 | sed 's/name: *//' | tr -d '"')
+  name=$(parse_frontmatter "$input/SKILL.md" "name")
   local desc
-  desc=$(grep "^description:" "$input/SKILL.md" | head -1 | sed 's/description: *//' | tr -d '"')
+  desc=$(parse_frontmatter "$input/SKILL.md" "description")
 
   mkdir -p "$output/.github"
 
