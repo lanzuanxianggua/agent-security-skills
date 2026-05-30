@@ -101,13 +101,17 @@ code-guard doesn't replace SAST tools — it brings security awareness directly 
 
 ## Quick Start
 
-### Claude Code
+### One-Command Install (Recommended)
 
 ```bash
-# Clone and symlink
-git clone https://github.com/lanzuanxianggua/agent-security-skills.git
-ln -s $(pwd)/agent-security-skills/skills/code-guard ~/.claude/skills/code-guard
-ln -s $(pwd)/agent-security-skills/skills/portable-skills ~/.claude/skills/portable-skills
+# Install code-guard — instant security audit in your AI agent
+npx skills add lanzuanxianggua/agent-security-skills --skill code-guard -g -y
+
+# Install portable-skills — write once, run everywhere
+npx skills add lanzuanxianggua/agent-security-skills --skill portable-skills -g -y
+
+# Or install everything at once
+npx skills add lanzuanxianggua/agent-security-skills --all -g -y
 ```
 
 Then in Claude Code:
@@ -115,8 +119,15 @@ Then in Claude Code:
 /code-guard audit the authentication module for security issues
 ```
 
+That's it. No clone, no config, no CI pipeline. Works in Claude Code immediately.
+
 ### Cursor
 
+```bash
+npx skills add lanzuanxianggua/agent-security-skills --skill code-guard -g -y
+```
+
+Or convert manually:
 ```bash
 git clone https://github.com/lanzuanxianggua/agent-security-skills.git
 cd agent-security-skills
@@ -127,6 +138,11 @@ cp -r dist/.cursor/rules/ /your/project/.cursor/rules/
 ### Windsurf
 
 ```bash
+npx skills add lanzuanxianggua/agent-security-skills --skill code-guard -g -y
+```
+
+Or convert manually:
+```bash
 ./scripts/convert.sh --input ./skills/code-guard/ --target windsurf
 cp -r dist/.windsurf/rules/ /your/project/.windsurf/rules/
 ```
@@ -134,6 +150,8 @@ cp -r dist/.windsurf/rules/ /your/project/.windsurf/rules/
 ### GitHub Copilot
 
 ```bash
+git clone https://github.com/lanzuanxianggua/agent-security-skills.git
+cd agent-security-skills
 ./scripts/convert.sh --input ./skills/code-guard/ --target copilot
 cp dist/.github/copilot-instructions.md /your/project/.github/copilot-instructions.md
 ```
