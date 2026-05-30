@@ -170,7 +170,7 @@
     },
     "complianceResult": {
       "type": "object",
-      "required": ["framework", "requirement", "status"],
+      "required": ["framework", "requirement", "status", "severity"],
       "properties": {
         "framework": {
           "type": "string",
@@ -178,6 +178,7 @@
         },
         "requirement": { "type": "string" },
         "status": { "type": "string", "enum": ["pass", "fail", "warning", "not-applicable"] },
+        "severity": { "type": "string", "enum": ["critical", "high", "medium", "low"] },
         "description": { "type": "string" },
         "evidence": { "type": "string" }
       }

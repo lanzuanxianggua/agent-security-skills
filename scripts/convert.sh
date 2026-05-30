@@ -100,7 +100,8 @@ validate_skill() {
   # Check manifest.json has required fields
   if [[ -f "$dir/manifest.json" ]]; then
     if ! command -v jq &>/dev/null; then
-      log_warn "jq not installed — skipping manifest.json validation"
+      log_warn "jq not installed — manifest.json not fully validated"
+      log_warn "Install jq for complete validation: https://stedolan.github.io/jq/"
     else
       for field in name version description compatibility; do
         if ! jq -e ".$field" "$dir/manifest.json" &>/dev/null; then
@@ -217,7 +218,7 @@ convert_to_copilot() {
 
   # Check for duplicate content
   if [[ -f "$output/.github/copilot-instructions.md" ]] && grep -q "## $name" "$output/.github/copilot-instructions.md" 2>/dev/null; then
-    log_warn "Skill '$name' already exists in copilot-instructions.md — use --force to overwrite, or edit manually"
+    log_warn "Skill '$name' already exists in copilot-instructions.md — appending anyway. Remove duplicates manually if needed."
   fi
 
   {
@@ -266,6 +267,11 @@ if [[ -n "$CHECK" ]]; then
   if command -v jq &>/dev/null; then
     status=$(jq -r ".compatibility.\"$CHECK_PLATFORM\".status // \"unknown\"" "$CHECK/manifest.json")
     notes=$(jq -r ".compatibility.\"$CHECK_PLATFORM\".notes // \"\"" "$CHECK/manifest.json")
+    if [[ "$status" == "null" || "$status" == "unknown" ]]; then
+      log_error "Unknown platform: $CHECK_PLATFORM"
+      log_error "Valid platforms: claude-code, cursor, windsurf, copilot, aider"
+      exit 1
+    fi
     echo "Platform: $CHECK_PLATFORM"
     echo "Status: $status"
     [[ -n "$notes" ]] && echo "Notes: $notes"
@@ -278,6 +284,7 @@ fi
 
 if [[ -z "$INPUT" || -z "$TARGET" ]]; then
   log_error "Both --input and --target are required for conversion"
+  exit 1
   usage
 fi
 
@@ -286,9 +293,36 @@ if [[ ! -d "$INPUT" ]]; then
   exit 1
 fi
 
+# Batch mode: if INPUT has no SKILL.md but has subdirectories with SKILL.md, process all
 if [[ ! -f "$INPUT/SKILL.md" ]]; then
-  log_error "No SKILL.md found in $INPUT"
-  exit 1
+  found=0
+  for dir in "$INPUT"/*/; do
+    if [[ -f "${dir}SKILL.md" ]]; then
+      skill_name=$(basename "$dir")
+      log_info "Found skill: $skill_name"
+      case "$TARGET" in
+        cursor) convert_to_cursor "$dir" "$OUTPUT" ;;
+        windsurf) convert_to_windsurf "$dir" "$OUTPUT" ;;
+        copilot) convert_to_copilot "$dir" "$OUTPUT" ;;
+        all)
+          convert_to_cursor "$dir" "$OUTPUT"
+          convert_to_windsurf "$dir" "$OUTPUT"
+          convert_to_copilot "$dir" "$OUTPUT"
+          ;;
+        *)
+          log_error "Unknown target: $TARGET. Use cursor|windsurf|copilot|all"
+          exit 1
+          ;;
+      esac
+      found=1
+    fi
+  done
+  if [[ $found -eq 0 ]]; then
+    log_error "No SKILL.md found in $INPUT or its subdirectories"
+    exit 1
+  fi
+  log_ok "Batch conversion complete in $OUTPUT"
+  exit 0
 fi
 
 OUTPUT="${OUTPUT:-./dist}"

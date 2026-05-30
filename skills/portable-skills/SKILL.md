@@ -167,7 +167,7 @@ Transforms:
 - schemas/ → drop (not supported)
 - scripts/ → keep bash scripts, reference from body
 
-CLI: npx portable-skills convert --from claude-code --to cursor --input ./my-skill/
+CLI: ./scripts/convert.sh --input ./my-skill/ --target cursor
 ```
 
 ### Claude Code → Windsurf
@@ -179,7 +179,7 @@ Transforms:
 - schemas/ → drop
 - scripts/ → keep bash scripts
 
-CLI: npx portable-skills convert --from claude-code --to windsurf --input ./my-skill/
+CLI: ./scripts/convert.sh --input ./my-skill/ --target windsurf
 ```
 
 ### Claude Code → Copilot
@@ -192,7 +192,7 @@ Transforms:
 - schemas/, scripts/ → drop
 - Tool-specific instructions → commented out with note
 
-CLI: npx portable-skills convert --from claude-code --to copilot --input ./my-skill/
+CLI: ./scripts/convert.sh --input ./my-skill/ --target copilot
 ```
 
 ### Universal → Any Platform
@@ -205,7 +205,7 @@ The universal format is a superset. Conversion to any platform:
 5. Generate target file at correct location
 6. Write manifest.json with conversion metadata
 
-CLI: npx portable-skills convert --input ./my-skill/ --target all
+CLI: ./scripts/convert.sh --input ./my-skill/ --target all
 ```
 
 ## Manifest Schema

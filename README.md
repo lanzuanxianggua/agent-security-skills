@@ -1,78 +1,141 @@
 # Agent Security Skills
 
-> Portable AI coding agent skills for security auditing and cross-agent compatibility. Write once, run on Claude Code, Cursor, Windsurf, GitHub Copilot, and any Agent Skills compatible tool.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![GitHub Stars](https://img.shields.io/github/stars/lanzuanxianggua/agent-security-skills?style=social)](https://github.com/lanzuanxianggua/agent-security-skills)
+[![Platform: Claude Code](https://img.shields.io/badge/Claude%20Code-Full-green.svg)]()
+[![Platform: Cursor](https://img.shields.io/badge/Cursor-Full-green.svg)]()
+[![Platform: Windsurf](https://img.shields.io/badge/Windsurf-Full-green.svg)]()
+[![Platform: Copilot](https://img.shields.io/badge/Copilot-Partial-yellow.svg)]()
 
-## Skills
+> **Security-audit your code with AI — and make it work on every AI coding agent.**
+> OWASP Top 10, secret detection, dependency audit, and compliance checks in one portable skill.
 
-### code-guard — AI Code Security Audit
+---
 
-Scans code for OWASP Top 10 vulnerabilities, leaked secrets, insecure dependencies, and compliance violations. Every finding includes a concrete fix, not just a warning.
+## What It Does
 
-**Features:**
-- OWASP Top 10 (2021) vulnerability detection patterns with code fixes
-- Secret/credential leak detection (AWS keys, GitHub tokens, private keys, etc.)
-- Dependency vulnerability audit (npm, pip, maven, cargo, go)
-- Compliance framework checks (GDPR, HIPAA, PCI-DSS, SOC 2)
-- Structured findings with severity classification (Critical → Info)
-- Pre-commit hook and CI/CD integration patterns
+### code-guard — Instant Security Audit in Your AI Agent
 
-### portable-skills — Cross-Agent Skill Standard
+No separate CLI tool, no CI pipeline to configure. Just ask your AI coding agent to audit your code.
 
-Defines a universal skill format and provides conversion tools for making skills portable across all major AI coding agents.
+**Before** (vulnerable):
+```typescript
+// SQL injection — attacker can dump your entire database
+app.get('/users', (req, res) => {
+  db.query(`SELECT * FROM users WHERE name = '${req.query.name}'`);
+});
+```
 
-**Features:**
-- Universal SKILL.md format specification (v1.0)
-- Detailed compatibility matrix (Claude Code, Cursor, Windsurf, Copilot, Aider)
-- Conversion CLI for batch skill transformation
-- Platform-specific file location mapping
-- Graceful degradation patterns
-- JSON schema for skill validation
+**After** (code-guard fix):
+```typescript
+// Parameterized query — injection-proof
+app.get('/users', (req, res) => {
+  db.query('SELECT * FROM users WHERE name = ?', [req.query.name]);
+});
+```
+
+**Sample audit output:**
+```
+🔴 CRITICAL CG-001: SQL Injection in User Search
+   Location: src/api/users.ts:3
+   Exploitability: Trivial — single HTTP request
+   Fix: Use parameterized queries (see above)
+
+🔴 CRITICAL SEC-002: Hardcoded AWS Access Key
+   Location: config/production.ts:12
+   Confidence: High
+   Fix: Move to environment variable, rotate immediately
+
+🟡 MEDIUM CG-003: Missing Rate Limiting on Login
+   Location: src/routes/auth.ts:45
+   Fix: Add rate limiting middleware
+```
+
+### portable-skills — Write Once, Run Everywhere
+
+Write a skill once in the universal format, convert it to work on any AI coding agent:
+
+```
+                    ┌─────────────┐
+                    │  SKILL.md   │  Universal format
+                    │ manifest.json│
+                    └──────┬──────┘
+                           │
+            ┌──────────────┼──────────────┐
+            ▼              ▼              ▼
+    ┌───────────┐  ┌───────────┐  ┌───────────┐
+    │  Cursor   │  │ Windsurf  │  │  Copilot  │
+    │  .mdc     │  │  .md      │  │  .md      │
+    └───────────┘  └───────────┘  └───────────┘
+```
+
+---
+
+## Features
+
+- **OWASP Top 10** vulnerability detection with code fixes in TypeScript, Python, Go, Java
+- **Secret detection** — AWS keys, GitHub tokens, Stripe keys, private SSH keys, JWT secrets, and 15+ more
+- **Dependency audit** — npm, pip, maven, cargo, go with CVE tracking
+- **Compliance checks** — GDPR, HIPAA, PCI-DSS, SOC 2
+- **Cross-agent portability** — works on Claude Code, Cursor, Windsurf, GitHub Copilot
+- **Conversion CLI** — one command to convert skills for any platform
+- **Structured output** — JSON schema for integration with CI/CD pipelines
+
+---
+
+## Why Not Just Use semgrep / SonarQube / Snyk?
+
+| | code-guard | semgrep | SonarQube | Snyk |
+|---|:---:|:---:|:---:|:---:|
+| Works inside your AI agent | Yes | No | No | No |
+| Portable across AI tools | Yes | N/A | N/A | N/A |
+| Includes fix suggestions | Yes | Partial | Partial | Partial |
+| Zero config / copy-paste install | Yes | No | No | No |
+| OWASP Top 10 + secrets + compliance | Yes | Rules only | Rules only | Deps only |
+| Works offline | Yes | Yes | No | No |
+| Free & open source | Yes | Partial | Partial | Partial |
+
+code-guard doesn't replace SAST tools — it brings security awareness directly into your AI coding workflow, where you write and review code every day.
+
+---
 
 ## Quick Start
 
-### Install via Skills CLI
+### Claude Code
 
 ```bash
-# Install code-guard
-npx skills add your-username/agent-security-skills@code-guard -g -y
-
-# Install portable-skills
-npx skills add your-username/agent-security-skills@portable-skills -g -y
-```
-
-### Install Manually (Claude Code)
-
-```bash
-# Clone the repo
-git clone https://github.com/your-username/agent-security-skills.git
-
-# Symlink skills to Claude Code
+# Clone and symlink
+git clone https://github.com/lanzuanxianggua/agent-security-skills.git
 ln -s $(pwd)/agent-security-skills/skills/code-guard ~/.claude/skills/code-guard
 ln -s $(pwd)/agent-security-skills/skills/portable-skills ~/.claude/skills/portable-skills
 ```
 
-### Install for Cursor
-
-```bash
-# Convert skills to Cursor format
-./scripts/convert.sh --input ./skills/code-guard/ --target cursor
-
-# Or copy the converted file
-cp -r .cursor/rules/ /path/to/your/project/.cursor/rules/
+Then in Claude Code:
+```
+/code-guard audit the authentication module for security issues
 ```
 
-### Install for Windsurf
+### Cursor
+
+```bash
+git clone https://github.com/lanzuanxianggua/agent-security-skills.git
+cd agent-security-skills
+./scripts/convert.sh --input ./skills/code-guard/ --target cursor
+cp -r dist/.cursor/rules/ /your/project/.cursor/rules/
+```
+
+### Windsurf
 
 ```bash
 ./scripts/convert.sh --input ./skills/code-guard/ --target windsurf
-cp -r .windsurf/rules/ /path/to/your/project/.windsurf/rules/
+cp -r dist/.windsurf/rules/ /your/project/.windsurf/rules/
 ```
 
-### Install for GitHub Copilot
+### GitHub Copilot
 
 ```bash
 ./scripts/convert.sh --input ./skills/code-guard/ --target copilot
-cp .github/copilot-instructions.md /path/to/your/project/.github/copilot-instructions.md
+cp dist/.github/copilot-instructions.md /your/project/.github/copilot-instructions.md
 ```
 
 ### Convert All Skills to All Platforms
@@ -81,16 +144,18 @@ cp .github/copilot-instructions.md /path/to/your/project/.github/copilot-instruc
 ./scripts/convert.sh --input ./skills/code-guard/ --target all --output ./release/
 ```
 
+---
+
 ## Usage
 
-### code-guard
+### code-guard Security Audit
 
-In Claude Code, type:
+Ask your AI agent to audit code:
 ```
 /code-guard scan the authentication module for security issues
 ```
 
-Or simply describe what you need:
+Or describe what you need:
 ```
 Audit the API endpoints for OWASP vulnerabilities and check for leaked secrets
 ```
@@ -102,12 +167,14 @@ The skill will:
 4. Check compliance against GDPR/HIPAA/PCI-DSS as applicable
 5. Produce a structured report with severity ratings and concrete fixes
 
-### portable-skills
+### portable-skills Cross-Agent Standard
 
 Use when creating or converting skills:
 ```
 /portable-skills convert my-skill to cursor format
 ```
+
+---
 
 ## Project Structure
 
@@ -137,7 +204,11 @@ agent-security-skills/
 │       │   └── migration-guide.md    # Conversion instructions
 │       └── schemas/
 │           └── portable-skill-schema.json # Skill validation schema
+└── examples/
+    └── sample-audit-report.md        # Example code-guard output
 ```
+
+---
 
 ## Validation
 
@@ -149,8 +220,13 @@ agent-security-skills/
 ./scripts/convert.sh --check ./skills/code-guard/ --platform cursor
 ```
 
+---
+
 ## Contributing
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+
+Quick summary:
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/my-skill`)
 3. Follow the universal skill format (see `portable-skills` skill)
